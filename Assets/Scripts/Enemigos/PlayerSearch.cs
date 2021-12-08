@@ -16,11 +16,12 @@ public class PlayerSearch : MonoBehaviour
     {
         return player != null;
     }
-    void OnCollisionEnter(Collision collision)
+
+    void OnTriggerEnter(Collider other)
     {
-        if (collision.collider.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
-            player = collision.gameObject;
+            player = other.gameObject;
         }
     }
 }

@@ -7,4 +7,5 @@ public class Status
     public float health;
     public float speed;
     public float atk;
+    public Dictionary<string, int> buffs = new Dictionary<string, int>();
 }

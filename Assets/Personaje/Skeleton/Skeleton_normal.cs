@@ -7,29 +7,32 @@ using UnityEngine.AI;
 public class Skeleton_normal : MonoBehaviour, Enemy
 {
     [SerializeField]
-    Status status;
+    protected Status status;
     [SerializeField]
-    Animator anim;
-    Action state;
+    protected Animator anim;
+    protected Action state;
+    [SerializeField]
+    protected PlayerSearch searcher;
 
-    
+    [SerializeField]
+    protected float atkDist = 2.5f;
 
     //habilidades
-    Skill basicAttack;
+    protected Skill basicAttack;
 
-    enum State { IDLE, DAMAGED, DEAD, PREIDLE, CHASE, ATTACK, VOID };
-    State actState;
-    State nextState;
-    State previousState;
+    protected enum State { IDLE, DAMAGED, DEAD, CHASE, ATTACK, VOID, SKILL };
+    protected State actState;
+    protected State nextState;
+    protected State previousState;
     //animation Parameter
-    int anim_dead, anim_attack, anim_damaged, anim_run, anim_skill;
+    protected int anim_dead, anim_attack, anim_damaged, anim_run, anim_skill;
 
-    NavMeshAgent agent;
+    protected NavMeshAgent agent;
 
-    IEnumerator coroutine = null;
-    bool coroutineFinished = false;
+    protected IEnumerator coroutine = null;
+    protected bool coroutineFinished = false;
 
-    bool invincible = false;
+    protected bool invincible = false;
 
     public Status Status { get {
             return status;
@@ -59,7 +62,10 @@ public class Skeleton_normal : MonoBehaviour, Enemy
             }
             else
             {
+                activeInvincible();
                 nextState = State.DAMAGED;
+                searcher.findPlayer();
+                StartCoroutine(timeOutWithAction(1, desactiveInvincible));
             }
         }
         
@@ -71,7 +77,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
     }
 
     // Start is called before the first frame update
-    void Start()
+    protected void Start()
     {
         state = idleState;
         actState = State.IDLE;
@@ -91,7 +97,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         state();
     }
 
-    void exitIdle()
+    protected void exitIdle()
     {
         if (coroutine != null)
         {
@@ -104,8 +110,16 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         previousState = State.IDLE;
     }
 
-    void idleState()
+    protected void idleState()
     {
+        if (searcher.playerFound())
+        {
+            state = chaseState;
+            exitIdle();
+            actState = State.CHASE;
+            return;
+        }
+
         if (nextState == State.DEAD)
         {
             state = deadState;
@@ -146,7 +160,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         }
     }
 
-    void damagedState()
+    protected void damagedState()
     {
         if (coroutine == null)
         {
@@ -155,24 +169,27 @@ public class Skeleton_normal : MonoBehaviour, Enemy
                 anim.SetTrigger(anim_damaged);
                 coroutine = timeOut(1);
                 StartCoroutine(coroutine);
-                activeInvincible();
             }
             else
             {
-                if(previousState == State.IDLE)
+                if(previousState == State.CHASE)
+                {
+                    state = chaseState;
+                    actState = State.CHASE;
+                }
+                else
                 {
                     state = idleState;
-                    previousState = State.DAMAGED;
                     actState = State.IDLE;
-                    desactiveInvincible();
-                    coroutineFinished = false;
                 }
+                previousState = State.DAMAGED;
+                coroutineFinished = false;
             }
         }
         
     }
 
-    void deadState()
+    protected void deadState()
     {
         if (coroutine == null)
         {
@@ -190,26 +207,126 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         }
     }
 
-    IEnumerator timeOut(float time)
+    protected void exitChase()
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
+        coroutineFinished = false;
+        agent.SetDestination(transform.position);
+        anim.SetBool(anim_run, false);
+        previousState = State.CHASE;
+    }
+
+    protected virtual void chaseState()
+    {
+        GameObject player = searcher.player;
+        if (nextState == State.DEAD)
+        {
+            state = deadState;
+            exitChase();
+            actState = State.DEAD;
+            nextState = State.VOID;
+            return;
+        }
+
+        if (nextState == State.DAMAGED)
+        {
+            state = damagedState;
+            exitChase();
+            actState = State.DAMAGED;
+            nextState = State.VOID;
+            return;
+        }
+        if (Vector3.Distance(transform.position, player.transform.position) <= atkDist)
+        {
+            state = basicAtkState;
+            exitChase();
+            actState = State.ATTACK;
+        }
+        else
+        {
+            anim.SetBool(anim_run, true);
+            agent.SetDestination(player.transform.position);
+        }
+    }
+
+    protected void exitBasicAtk()
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
+        coroutineFinished = false;
+        previousState = State.ATTACK;
+        basicAttack.cancelSkill();
+    }
+
+    protected void basicAtkState()
+    {
+        if (nextState == State.DEAD)
+        {
+            state = deadState;
+            exitBasicAtk();
+            actState = State.DEAD;
+            nextState = State.VOID;
+            return;
+        }
+
+        if (nextState == State.DAMAGED)
+        {
+            state = damagedState;
+            exitBasicAtk();
+            actState = State.DAMAGED;
+            nextState = State.VOID;
+            return;
+        }
+
+        transform.LookAt(searcher.player.transform.position);
+        if (coroutine == null)
+        {
+            if (!coroutineFinished)
+            {
+                anim.SetTrigger(anim_attack);
+                coroutine = timeOut(2);
+                StartCoroutine(coroutine);
+                basicAttack.useSkill(damage: status.atk);
+            }
+            else
+            {
+                state = chaseState;
+                actState = State.CHASE;
+                previousState = State.ATTACK;
+                basicAttack.cancelSkill();
+                coroutineFinished = false;
+            }
+        }
+    }
+
+
+    protected IEnumerator timeOut(float time)
     {
         yield return new WaitForSeconds(time);
         coroutineFinished = true;
         coroutine = null;
     }
-    IEnumerator timeOutWithAction(float time, Action callback)
+    protected IEnumerator timeOutWithAction(float time, Action callback)
     {
         yield return new WaitForSeconds(time);
         callback();
     }
-    void activeInvincible()
+    protected void activeInvincible()
     {
         invincible = true;
     }
-    void desactiveInvincible()
+    protected void desactiveInvincible()
     {
         invincible = false;
     }
-    void OnTriggerEnter(Collider other)
+    protected void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("player_atk"))
         {

@@ -14,4 +14,12 @@ public class playerFake : MonoBehaviour
                                         Input.GetAxis("Vertical"))).normalized * speed
                                         * Time.deltaTime);
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("enemy_atk"))
+        {
+            Debug.Log("aaaaa");
+        }
+    }
 }
