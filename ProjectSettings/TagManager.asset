@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - player_atk
+  - enemy
+  - player
+  - enemy_atk
   layers:
   - Default
   - TransparentFX
@@ -11,11 +15,11 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
+  - player_atk
+  - enemy_atk
+  - player
+  - enemy
+  - player_search
   - 
   - 
   - 
