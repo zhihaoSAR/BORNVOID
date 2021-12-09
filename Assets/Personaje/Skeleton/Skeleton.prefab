@@ -114,6 +114,7 @@ MonoBehaviour:
     atk: 5
   anim: {fileID: 1049020179898957476}
   searcher: {fileID: 1154201420}
+  atkDist: 2.5
 --- !u!114 &1870423284
 MonoBehaviour:
   m_ObjectHideFlags: 0
