@@ -56,6 +56,7 @@ public class Skeleton_big :Skeleton_normal
         else
         {
             anim.SetBool(anim_run, true);
+            running_sound.UnPause();
             agent.SetDestination(player.transform.position);
         }
     }

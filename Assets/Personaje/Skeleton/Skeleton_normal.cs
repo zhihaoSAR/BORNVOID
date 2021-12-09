@@ -17,6 +17,9 @@ public class Skeleton_normal : MonoBehaviour, Enemy
     [SerializeField]
     protected float atkDist = 2.5f;
 
+    [SerializeField]
+    protected AudioSource running_sound;
+
     //habilidades
     protected Skill basicAttack;
 
@@ -89,6 +92,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         anim_dead = Animator.StringToHash("dead");
         anim_run = Animator.StringToHash("run");
         anim_skill = Animator.StringToHash("skill");
+        running_sound.Pause();
     }
 
     // Update is called once per frame
@@ -107,6 +111,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         coroutineFinished = false;
         agent.SetDestination(transform.position);
         anim.SetBool(anim_run, false);
+        running_sound.Pause();
         previousState = State.IDLE;
     }
 
@@ -141,6 +146,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         if(Vector3.Distance(transform.position, agent.destination) <= agent.stoppingDistance)
         {
             anim.SetBool(anim_run, false);
+            running_sound.Pause();
             if(coroutine == null)
             {
                 if (coroutineFinished)
@@ -149,6 +155,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
                     move.y = 0;
                     agent.SetDestination(move + transform.position);
                     anim.SetBool(anim_run, true);
+                    running_sound.UnPause();
                     coroutineFinished = false;
                 }
                 else
@@ -217,6 +224,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         coroutineFinished = false;
         agent.SetDestination(transform.position);
         anim.SetBool(anim_run, false);
+        running_sound.Pause();
         previousState = State.CHASE;
     }
 
@@ -249,6 +257,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         else
         {
             anim.SetBool(anim_run, true);
+            running_sound.UnPause();
             agent.SetDestination(player.transform.position);
         }
     }
