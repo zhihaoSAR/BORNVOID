@@ -259,7 +259,7 @@ public class simpleMovement : MonoBehaviour {
         //Set the player is quiet.
 
         //Change the tag of the player to dead.
-        gameObject.tag = "player";
+        gameObject.tag = "Player";
         // Change the Layer of the player to dead.
         gameObject.layer = 0;
     }
