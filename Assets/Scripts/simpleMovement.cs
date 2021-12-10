@@ -5,6 +5,8 @@ using UnityEngine;
 public class simpleMovement : MonoBehaviour {
     int runF = Animator.StringToHash("runFrontal");
     int idle = Animator.StringToHash("Idle");
+    int death = Animator.StringToHash("Death");
+    int attacking = Animator.StringToHash("Attacking");
 
     //Geting a CharacterController component.
     [SerializeField] CharacterController controller;
@@ -16,6 +18,11 @@ public class simpleMovement : MonoBehaviour {
     [SerializeField] Animator animator;
     //Getting the speed of the player from the editor.
     [SerializeField] Stats stats;
+    //The game Object of the Projectile Prefab.
+    [SerializeField] GameObject projectile;
+    //The game Object of the weapon.
+    [SerializeField] GameObject weapon;
+
 
     //The camera is Orthographic.
     public bool isOrthographic;
@@ -29,6 +36,16 @@ public class simpleMovement : MonoBehaviour {
     float turnSmoothVelocity;
     //Bool to check if the player is moving.
     private bool isMoving = false;
+    //Bool to check if the player is attacking.
+    private bool isAttacking = false;
+    private bool canAttack = true;
+    //Is dead bool.
+    public bool isDead = false;
+
+
+    //habilidades
+    protected BasicAttack swordSkill;
+
 
     // Start is called before the first frame update
     void Start() {
@@ -43,6 +60,9 @@ public class simpleMovement : MonoBehaviour {
 
         //Append the sphere to the GameObject.
         sphere.transform.parent = transform;
+
+        //Get the weapon a swordSkill script, with the serialized field.
+        swordSkill = weapon.GetComponent<BasicAttack>();
     }
 
     private Ray getOrtographicScreenPointToRay(Vector3 screenPoint) {
@@ -61,12 +81,16 @@ public class simpleMovement : MonoBehaviour {
     private Plane plane = new Plane(Vector3.up, 0);
     // Update is called once per frame
     void Update() {
-        speed = stats.speed;
         
+        //If the player is dead, do nothing.
+        if (isDead) {
+            return;
+        }
+
+        speed = stats.speed;
         float distance;
         //Set the player is quiet.
         isMoving = false;
-
         // Check if you right click on the ground.
         if (Input.GetMouseButton(1)) {
             //Raycast depending on the camera type.
@@ -88,7 +112,6 @@ public class simpleMovement : MonoBehaviour {
                 float targetAngle = Mathf.Atan2(targetDir.x, targetDir.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotationSpeed);
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
-                //Debug.Log(worldPosition);
                 controller.Move(targetDir.normalized * step);
 
                 if (step > 0.05f) {
@@ -106,20 +129,139 @@ public class simpleMovement : MonoBehaviour {
                     sphere.transform.parent = raycastChecker.transform;
                 }
             }
+        } else {
+            //If not right click, check the pressed keys of AWSD.
+            //Set a Vector3 to add the directions of the keys.
+            Vector3 move = new Vector3(0, 0, 0);
+            //Check if the key S is pressed.
+            if (Input.GetKey(KeyCode.S)) {
+                move += new Vector3(-1, 0, -1);
+            }
+            //Check if the key D is pressed.
+            if (Input.GetKey(KeyCode.D)) {
+                move += new Vector3(1, 0, -1);
+            }
+            //Check if the key W is pressed.
+            if (Input.GetKey(KeyCode.W)) {
+                move += new Vector3(1, 0, 1);
+            }
+            //Check if the key A is pressed.
+            if (Input.GetKey(KeyCode.A)) {
+                move += new Vector3(-1, 0, 1);
+            }
+            if (move.magnitude > 0) {
+                //Set the player is moving.
+                float step = speed * Time.deltaTime;
+
+                float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
+                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotationSpeed);
+
+                transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                controller.Move(move.normalized * step);
+
+                isMoving = true;
+            }
         }
 
+        //Check if the player is attacking.
+        if (Input.GetMouseButton(0) && canAttack) {
+            canAttack = false;
+            isAttacking = true;
+            //Active the collider of the weapon.
+            weapon.GetComponent<BoxCollider>().enabled = true;
+            swordSkill.useSkill(damage: stats.damage);
+
+            //Set the stats of the attack.
+            stats.attackTime = stats.durationAttack;
+            stats.attackTimeP = stats.attackTimer;
+        } else {
+            //reduce the attack time.
+            if (stats.attackTime > 0) {
+                stats.attackTime -= Time.deltaTime;
+            } else if (isAttacking) {
+                //If the attack time is 0 or less, set the collider of the weapon to false.
+                weapon.GetComponent<BoxCollider>().enabled = false;
+                //Set the attack time to the duration of the attack.
+                stats.attackTime = stats.durationAttack;
+                //Set the attack time progress to the attack timer.
+                stats.attackTimeP = stats.attackTimer;
+                //Set the player is not attacking.
+                isAttacking = false;
+                swordSkill.cancelSkill();
+                stats.attackTimeP = 0;
+            }
+            stats.attackTimeP -= Time.deltaTime;
+            if (stats.attackTimeP <= 0) {
+                canAttack = true;
+                stats.attackTimeP = 0;
+            }
+        }
+         
+        if (!Input.GetMouseButton(0) && Input.GetKey(KeyCode.Space)) {
+            //Create a new instance of the projectile.
+            GameObject projectileInst = (GameObject)Instantiate(projectile, transform.position + transform.forward, transform.rotation);
+            //Set the projectile direction.
+            ProjectileSkill projectileSkill = projectileInst.GetComponent<ProjectileSkill>();
+            projectileSkill.direction = transform.forward;
+            //Set the projectile damage.
+            projectileSkill.damage = stats.projectileDamage;
+
+
+            Debug.Log("Shooting");
+        }
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-
-        //Check if the player is moving.
-        if (isMoving) {
-            //Set the animator to moving.
-            animator.Play(runF);
+        if (isAttacking) {
+            //Set the animator to Attack Animations.
+            animator.Play(attacking);
         } else {
-            //Set the animator to quiet.
-            animator.Play(idle);
+            if (isMoving) {
+                //Set the animator to Walk Animations.
+                animator.Play(runF);
+            } else {
+                //Set the animator to Idle Animations.
+                animator.Play(idle);
+            }
         }
         //Set the position to Y = 0.
         transform.position = new Vector3(transform.position.x, 1, transform.position.z);
     }
+
+    void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("enemy_atk")) {
+            // You are attacked. Extract the damage from the enemy skill
+            //Totalmente provisional, podemos hacer un append de las propias stats en el collider dede el script de skill.
+            GameObject enemy = other.transform.parent.parent.parent.parent.gameObject;
+
+            //Get the enemy skill script.
+            Skill enemySkill = enemy.GetComponent<Skill>();
+            // Get the damage from the enemy skill.
+            float damage = enemySkill.Damage;
+            stats.getDamage(damage);
+            Debug.Log("You are attacked. Health: " + stats.health);
+            //Check if the player is dead.
+            if (stats.isDead()) {
+                Debug.Log("You are dead.");
+                //Trigger the function.
+                deadState();
+            }
+
+        }
+    }
+
+    protected void deadState() {
+        //Trigger the function.
+        animator.Play(death);
+        //Set the player is dead.
+        isDead = true;
+        //Set the player is quiet.
+        isMoving = false;
+        //Set the player is quiet.
+
+        //Change the tag of the player to dead.
+        gameObject.tag = "player";
+        // Change the Layer of the player to dead.
+        gameObject.layer = 0;
+    }
+
 }
