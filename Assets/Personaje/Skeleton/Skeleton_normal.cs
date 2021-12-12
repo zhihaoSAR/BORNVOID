@@ -19,9 +19,10 @@ public class Skeleton_normal : Enemy
 
     [SerializeField]
     protected AudioSource running_sound;
-
+    [SerializeField]
+    protected BasicAttack basicAttack;
     //habilidades
-    protected Skill basicAttack;
+
 
     protected enum State { IDLE, DAMAGED, DEAD, CHASE, ATTACK, VOID, SKILL };
     protected State actState;
@@ -88,7 +89,6 @@ public class Skeleton_normal : Enemy
         actState = State.IDLE;
         desactiveInvincible();
         agent = GetComponent<NavMeshAgent>();
-        basicAttack = GetComponent<BasicAttack>();
         anim_attack = Animator.StringToHash("attack");
         anim_damaged = Animator.StringToHash("damaged");
         anim_dead = Animator.StringToHash("dead");

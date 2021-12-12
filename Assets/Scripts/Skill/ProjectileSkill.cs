@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProjectileSkill : MonoBehaviour, Skill {
+public class ProjectileSkill : Skill {
     
     //Es mala practica ponerlo public pero sirve para debugear y hacer mas rapido el codigo de esta clase.
     SphereCollider spCollider;
@@ -12,19 +12,19 @@ public class ProjectileSkill : MonoBehaviour, Skill {
     public Vector3 direction;
     public bool homming;
 
-    public float Damage { get => this.damage; }
+    public override float Damage { get => this.damage; }
 
-    public void cancelSkill()
+    public override void cancelSkill()
     {
         spCollider.enabled = false;
     }
 
-    public bool skillCompleted()
+    public override bool skillCompleted()
     {
         return spCollider.enabled;
     }
 
-    public bool useSkill(GameObject obj = null, float damage = 0){return false;}
+    public override bool useSkill(GameObject obj = null, float damage = 0){return false;}
 
 
 

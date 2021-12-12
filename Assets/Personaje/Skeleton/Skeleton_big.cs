@@ -85,6 +85,7 @@ public class Skeleton_big :Skeleton_normal
                 state = chaseState;
                 actState = State.CHASE;
                 previousState = State.SKILL;
+                nextState = State.VOID;
                 coroutineFinished = false;
             }
         }

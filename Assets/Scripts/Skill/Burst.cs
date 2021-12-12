@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Burst : MonoBehaviour, Skill
+public class Burst : Skill
 {
-    public float Damage => 0;
+    public override float Damage => 0;
 
     [SerializeField]
     float increment = 5;
@@ -15,18 +15,18 @@ public class Burst : MonoBehaviour, Skill
 
     Status status = null;
 
-    public void cancelSkill()
+    public override void cancelSkill()
     {
         Debug.Log("no effect");
         return;
     }
 
-    public bool skillCompleted()
+    public override bool skillCompleted()
     {
         return true;
     }
 
-    public bool useSkill(GameObject obj = null, float damage = 0)
+    public override bool useSkill(GameObject obj = null, float damage = 0)
     {
         if(obj == null)
         {

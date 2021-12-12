@@ -231,7 +231,7 @@ public class simpleMovement : MonoBehaviour {
         if (other.CompareTag("enemy_atk")) {
             // You are attacked. Extract the damage from the enemy skill
             //Totalmente provisional, podemos hacer un append de las propias stats en el collider dede el script de skill.
-            GameObject enemy = other.transform.parent.parent.parent.parent.gameObject;
+            GameObject enemy = other.gameObject;
 
             //Get the enemy skill script.
             Skill enemySkill = enemy.GetComponent<Skill>();

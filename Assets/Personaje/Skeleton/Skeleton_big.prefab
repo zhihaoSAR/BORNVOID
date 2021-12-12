@@ -128,9 +128,11 @@ MonoBehaviour:
     atk: 5
   anim: {fileID: 5253699562487927441}
   searcher: {fileID: 5072809793176705913}
-  atkDist: 3
+  atkDist: 2.5
   running_sound: {fileID: -5979254745077783574}
+  basicAttack: {fileID: 2091218305940805807}
   skillProbability: 0.2
+  burst: {fileID: 0}
 --- !u!1001 &5072809792039300149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -211,6 +213,17 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 1049020179898957476, guid: 343b11f5be4b5884fa8c6ea609456572, type: 3}
   m_PrefabInstance: {fileID: 5072809792039300149}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2091218305940805807 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6585180031017120922, guid: 343b11f5be4b5884fa8c6ea609456572, type: 3}
+  m_PrefabInstance: {fileID: 5072809792039300149}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27d5225f7cd48f04baf55ef5ca018395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5072809793176705913 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1154201420, guid: 343b11f5be4b5884fa8c6ea609456572, type: 3}

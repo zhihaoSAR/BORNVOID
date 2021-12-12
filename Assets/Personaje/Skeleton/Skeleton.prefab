@@ -69,7 +69,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1049020179234778535}
   - component: {fileID: 1870423283}
-  - component: {fileID: 1870423284}
   - component: {fileID: 1870423285}
   - component: {fileID: 1870423287}
   - component: {fileID: 1870423288}
@@ -116,21 +115,9 @@ MonoBehaviour:
     atk: 5
   anim: {fileID: 1049020179898957476}
   searcher: {fileID: 1154201420}
-  atkDist: 2.5
+  atkDist: 2
   running_sound: {fileID: 8077402958604298930}
---- !u!114 &1870423284
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1049020179234778534}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27d5225f7cd48f04baf55ef5ca018395, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  atk_area: {fileID: 8380746352326014918}
+  basicAttack: {fileID: 6585180031017120922}
 --- !u!195 &1870423285
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -289,6 +276,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8695419767450378514}
   - component: {fileID: 8380746352326014918}
+  - component: {fileID: 6585180031017120922}
   m_Layer: 7
   m_Name: weapon
   m_TagString: enemy_atk
@@ -323,6 +311,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.013063109, y: 0.006410638, z: 0.0743611}
   m_Center: {x: -0.0014345644, y: 0.00019961246, z: 0.051457178}
+--- !u!114 &6585180031017120922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4197547796855197334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27d5225f7cd48f04baf55ef5ca018395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  atk_area: {fileID: 8380746352326014918}
 --- !u!1001 &1049020179906235332
 PrefabInstance:
   m_ObjectHideFlags: 0
