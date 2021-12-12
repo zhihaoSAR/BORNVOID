@@ -39,7 +39,7 @@ public class Skeleton_normal : Enemy
 
     protected Action deadCallback = null;
 
-    public Status Status { get {
+    public override Status Status { get {
             return status;
         }
         set {

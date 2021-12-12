@@ -17,6 +17,9 @@ public class GenericRoom : RoomManager
     [SerializeField]
     bool firstRoom = false;
 
+    [SerializeField]
+    GameObject exitWall, enterWall;
+
     public override void enemyDead()
     {
         if (++enemiesDead == enemyNum)
@@ -28,6 +31,10 @@ public class GenericRoom : RoomManager
     public override void playerEnter()
     {
         StartCoroutine(Spawn());
+        if (enterWall)
+        {
+            enterWall.SetActive(true);
+        }
     }
 
     public override void playerExit()
@@ -73,9 +80,8 @@ public class GenericRoom : RoomManager
                     p -= probability[enemyInd];
                 }
                 Debug.Log("new enemy");
-                Enemy e = Instantiate(config.Enemies[enemyInd]);
+                Enemy e = Instantiate(config.Enemies[enemyInd], spawnPos, Quaternion.identity);
                 e.setDeadCallback(enemyDead);
-                e.transform.position = spawnPos;
                 enemiesSpawned++;
             }
             yield return new WaitForSeconds(config.SpawnTime);
@@ -85,5 +91,18 @@ public class GenericRoom : RoomManager
     public override void roomCompleted()
     {
         Debug.Log("pasada");
+        if (exitWall)
+        {
+            exitWall.SetActive(false);
+        }
     }
+
+    protected void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            playerEnter();
+        }
+    }
+
 }

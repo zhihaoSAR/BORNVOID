@@ -19,5 +19,5 @@ MonoBehaviour:
   - 0.9
   - 0.1
   MaxEnemieNumAtTime: 4
-  InitEnemyNum: 10
+  InitEnemyNum: 1
   SpawnTime: 0.5
