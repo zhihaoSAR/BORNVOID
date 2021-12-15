@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class simpleMovement : MonoBehaviour {
-    int runF = Animator.StringToHash("runFrontal");
-    int idle = Animator.StringToHash("Idle");
-    int death = Animator.StringToHash("Death");
-    int attacking = Animator.StringToHash("Attacking");
+    private int runF;
+    private int idle;
+    private int death;
+    private int attacking;
+    private int dash;
 
     //Geting a CharacterController component.
     [SerializeField] CharacterController controller;
-    //Getting a gameObject with Mesh Collider component to use for the ground from the editor.
-    [SerializeField] GameObject ground;
     //Empty GameObject to use to check the values of the raycast.
     [SerializeField] GameObject raycastChecker;
     //Getting the animator component.
@@ -30,8 +29,6 @@ public class simpleMovement : MonoBehaviour {
     private float speed;
     //Getting the rotation speed of the player from the editor.
     public float rotationSpeed;
-    //Bool to check if add Spheres.
-    public bool addSpheres;
 
     float turnSmoothVelocity;
     //Bool to check if the player is moving.
@@ -46,21 +43,19 @@ public class simpleMovement : MonoBehaviour {
     //habilidades
     protected BasicAttack swordSkill;
 
+    //Vector3 to store the dash direction.
+    private Vector3 dashDirection;
+
 
     // Start is called before the first frame update
     void Start() {
         //Getting the animator component.
         animator = GetComponent<Animator>();
-
-        //Add to the GameObject a sphere Object with a radius of 0.1f, and a red color.
-        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.position = new Vector3(0, -1f, 0);
-        sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-        sphere.GetComponent<Renderer>().material.color = Color.red;
-
-        //Append the sphere to the GameObject.
-        sphere.transform.parent = transform;
-
+        runF = Animator.StringToHash("RunFrontal");
+        idle = Animator.StringToHash("Idle");
+        death = Animator.StringToHash("Death");
+        attacking = Animator.StringToHash("Attacking");
+        dash = Animator.StringToHash("Dash");
         //Get the weapon a swordSkill script, with the serialized field.
         swordSkill = weapon.GetComponent<BasicAttack>();
     }
@@ -78,6 +73,28 @@ public class simpleMovement : MonoBehaviour {
         return new Ray(origin, Camera.main.transform.forward);
     }
 
+    private Vector3 getObjectiveDirection(Ray ray) {
+        float distance = 0;
+        Vector3 direction = Vector3.zero;
+        if (plane.Raycast(ray, out distance)) {
+            //Get the position of the ground.
+            Vector3 worldPosition = ray.GetPoint(distance);
+            //Debug.Log(worldPosition);
+            Vector3 targetDir = (worldPosition - transform.position);
+            targetDir.y = 0f;
+            direction = targetDir.normalized;
+        }
+        return direction;
+    }
+
+
+    //Get the objective rotation of the player.
+    private Quaternion getObjectiveRotation(Vector3 objectivePoint) {
+        float targetAngle = Mathf.Atan2(objectivePoint.x, objectivePoint.z) * Mathf.Rad2Deg;
+
+        return Quaternion.Euler(0f, targetAngle, 0f);
+    }
+
     private Plane plane = new Plane(Vector3.up, 0);
     // Update is called once per frame
     void Update() {
@@ -87,27 +104,58 @@ public class simpleMovement : MonoBehaviour {
             return;
         }
 
-        speed = stats.speed;
-        float distance;
-        //Set the player is quiet.
-        isMoving = false;
-        // Check if you right click on the ground.
-        if (Input.GetMouseButton(1)) {
-            //Raycast depending on the camera type.
-            Ray ray;
-            if (isOrthographic) {
-                ray = getOrtographicScreenPointToRay(Input.mousePosition);
-            } else {
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            }
-            if (plane.Raycast(ray, out distance)) {
-                //Get the position of the ground.
-                Vector3 worldPosition = ray.GetPoint(distance);
-                //Debug.Log(worldPosition);
-                Vector3 targetDir = (worldPosition - transform.position);
-                targetDir.y = 0f;
+        if (!stats.inDash && stats.dashTimer == 0) {
+            //Check if the player do a dash.
+            if (Input.GetKeyDown(KeyCode.LeftControl)) {
+                stats.inDash = true;
+                stats.dashLeftTime = stats.dashTime;
+                stats.dashTimer = stats.dashCooldown;
 
-                float step = Mathf.Min(speed, targetDir.magnitude) * Time.deltaTime;
+                //Calculate the direction of the dash.
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Vector3 direction = getObjectiveDirection(ray);
+                Quaternion rotation = getObjectiveRotation(direction);
+                transform.rotation = rotation;
+                float step = speed * stats.dashSpeedMultiplier;
+                dashDirection = direction * step;
+                controller.Move(dashDirection * Time.deltaTime);
+                //isMoving = true;
+            }
+        } else {
+            //If the player is dashing, do nothing.
+            if (stats.dashLeftTime > 0) {
+                controller.Move(dashDirection * Time.deltaTime);
+                isMoving = true;
+                stats.dashLeftTime -= Time.deltaTime;
+                if (stats.dashLeftTime <= 0) {
+                    stats.dashLeftTime = 0;
+                    stats.inDash = false;
+                }
+            } else if (stats.dashTimer > 0) {
+                stats.dashTimer -= Time.deltaTime;
+                if (stats.dashTimer <= 0) {
+                    stats.dashTimer = 0;
+                }
+            }
+        }
+
+        if(!stats.inDash) {
+            speed = stats.speed;
+            //Set the player is quiet.
+            isMoving = false;
+            // Check if you right click on the ground.
+            if (Input.GetMouseButton(1)) {
+                //Raycast depending on the camera type.
+                Ray ray;
+                if (isOrthographic) {
+                    ray = getOrtographicScreenPointToRay(Input.mousePosition);
+                } else {
+                    ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                }
+
+                Vector3 targetDir = getObjectiveDirection(ray);
+
+                float step = speed * Time.deltaTime;
 
                 float targetAngle = Mathf.Atan2(targetDir.x, targetDir.z) * Mathf.Rad2Deg;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotationSpeed);
@@ -117,114 +165,119 @@ public class simpleMovement : MonoBehaviour {
                 if (step > 0.05f) {
                     isMoving = true;
                 }
+                
+            } else {
+                //If not right click, check the pressed keys of AWSD.
+                //Set a Vector3 to add the directions of the keys.
+                Vector3 move = new Vector3(0, 0, 0);
+                //Check if the key S is pressed.
+                if (Input.GetKey(KeyCode.S)) {
+                    move += new Vector3(-1, 0, -1);
+                }
+                //Check if the key D is pressed.
+                if (Input.GetKey(KeyCode.D)) {
+                    move += new Vector3(1, 0, -1);
+                }
+                //Check if the key W is pressed.
+                if (Input.GetKey(KeyCode.W)) {
+                    move += new Vector3(1, 0, 1);
+                }
+                //Check if the key A is pressed.
+                if (Input.GetKey(KeyCode.A)) {
+                    move += new Vector3(-1, 0, 1);
+                }
+                if (move.magnitude > 0) {
+                    //Set the player is moving.
+                    float step = speed * Time.deltaTime;
 
-                if (addSpheres) {    
-                    //Append a green sphere to raycastChecker in the position of hit.
-                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    sphere.transform.position = worldPosition;
-                    //Set the position Y of the sphere to 0.
-                    sphere.transform.position = new Vector3(sphere.transform.position.x, 0, sphere.transform.position.z);
-                    sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                    sphere.GetComponent<Renderer>().material.color = Color.green;
-                    sphere.transform.parent = raycastChecker.transform;
+                    float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
+                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotationSpeed);
+
+                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                    controller.Move(move.normalized * step);
+
+                    isMoving = true;
                 }
             }
-        } else {
-            //If not right click, check the pressed keys of AWSD.
-            //Set a Vector3 to add the directions of the keys.
-            Vector3 move = new Vector3(0, 0, 0);
-            //Check if the key S is pressed.
-            if (Input.GetKey(KeyCode.S)) {
-                move += new Vector3(-1, 0, -1);
-            }
-            //Check if the key D is pressed.
-            if (Input.GetKey(KeyCode.D)) {
-                move += new Vector3(1, 0, -1);
-            }
-            //Check if the key W is pressed.
-            if (Input.GetKey(KeyCode.W)) {
-                move += new Vector3(1, 0, 1);
-            }
-            //Check if the key A is pressed.
-            if (Input.GetKey(KeyCode.A)) {
-                move += new Vector3(-1, 0, 1);
-            }
-            if (move.magnitude > 0) {
-                //Set the player is moving.
-                float step = speed * Time.deltaTime;
 
-                float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
-                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, rotationSpeed);
+            //Check if the player is attacking.
+            if (Input.GetMouseButton(0) && canAttack) {
+                canAttack = false;
+                isAttacking = true;
+                //Active the collider of the weapon.
+                weapon.GetComponent<BoxCollider>().enabled = true;
+                swordSkill.useSkill(damage: stats.damage);
 
-                transform.rotation = Quaternion.Euler(0f, angle, 0f);
-                controller.Move(move.normalized * step);
-
-                isMoving = true;
-            }
-        }
-
-        //Check if the player is attacking.
-        if (Input.GetMouseButton(0) && canAttack) {
-            canAttack = false;
-            isAttacking = true;
-            //Active the collider of the weapon.
-            weapon.GetComponent<BoxCollider>().enabled = true;
-            swordSkill.useSkill(damage: stats.damage);
-
-            //Set the stats of the attack.
-            stats.attackTime = stats.durationAttack;
-            stats.attackTimeP = stats.attackTimer;
-        } else {
-            //reduce the attack time.
-            if (stats.attackTime > 0) {
-                stats.attackTime -= Time.deltaTime;
-            } else if (isAttacking) {
-                //If the attack time is 0 or less, set the collider of the weapon to false.
-                weapon.GetComponent<BoxCollider>().enabled = false;
-                //Set the attack time to the duration of the attack.
+                //Set the stats of the attack.
                 stats.attackTime = stats.durationAttack;
-                //Set the attack time progress to the attack timer.
                 stats.attackTimeP = stats.attackTimer;
-                //Set the player is not attacking.
-                isAttacking = false;
-                swordSkill.cancelSkill();
-                stats.attackTimeP = 0;
+
+                //Rotate the player to the direction of the mouse.
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Vector3 targetDir = getObjectiveDirection(ray);
+                Quaternion rotation = getObjectiveRotation(targetDir);
+                transform.rotation = rotation;
+            } else {
+                //reduce the attack time.
+                if (stats.attackTime > 0) {
+                    stats.attackTime -= Time.deltaTime;
+                    if (stats.attackTime <= 0) {
+                        stats.attackTime = 0;
+                        //Disable the collider of the weapon.
+                        weapon.GetComponent<BoxCollider>().enabled = false;
+                        isAttacking = false;
+                        swordSkill.cancelSkill();
+                    }
+                }
+                if (stats.attackTimeP > 0) {
+                    stats.attackTimeP -= Time.deltaTime;
+                    if (stats.attackTimeP <= 0) {
+                        stats.attackTimeP = 0;
+                        canAttack = true;
+                    }
+                }
             }
-            stats.attackTimeP -= Time.deltaTime;
-            if (stats.attackTimeP <= 0) {
-                canAttack = true;
-                stats.attackTimeP = 0;
-            }
-        }
-         
-        if (!Input.GetMouseButton(0) && Input.GetKey(KeyCode.Space)) {
-            //Create a new instance of the projectile.
-            GameObject projectileInst = (GameObject)Instantiate(projectile, transform.position + transform.forward, transform.rotation);
-            //Set the projectile direction.
-            ProjectileSkill projectileSkill = projectileInst.GetComponent<ProjectileSkill>();
-            projectileSkill.direction = transform.forward;
-            //Set the projectile damage.
-            projectileSkill.damage = stats.projectileDamage;
+            if (!Input.GetMouseButton(0) && Input.GetKeyDown(KeyCode.Space)) {
+                //Rotate the player to the direction of the mouse.
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Vector3 targetDir = getObjectiveDirection(ray);
+                Quaternion rotation = getObjectiveRotation(targetDir);
+                transform.rotation = rotation;
 
 
-            Debug.Log("Shooting");
+                //Create a new instance of the projectile.
+                GameObject projectileInst = (GameObject)Instantiate(projectile, transform.position + transform.forward, transform.rotation);
+                //Set the projectile direction.
+                ProjectileSkill projectileSkill = projectileInst.GetComponent<ProjectileSkill>();
+                projectileSkill.direction = transform.forward;
+                //Set the projectile damage.
+                projectileSkill.damage = stats.projectileDamage;
+
+                Debug.Log("Shooting");
+            }
         }
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (isAttacking) {
-            //Set the animator to Attack Animations.
-            animator.Play(attacking);
+        if (stats.inDash) {
+            animator.Play(dash);
         } else {
-            if (isMoving) {
-                //Set the animator to Walk Animations.
-                animator.Play(runF);
+            if (isAttacking) {
+                //Set the animator to Attack Animations.
+                animator.Play(attacking);
             } else {
-                //Set the animator to Idle Animations.
-                animator.Play(idle);
+                if (isMoving) {
+                    //Set the animator to Walk Animations.
+                    animator.Play(runF);
+                } else {
+                    //Set the animator to Idle Animations.
+                    animator.Play(idle);
+                }
             }
         }
+
+        //get the scale.y of the player.
         //Set the position to Y = 0.
-        transform.position = new Vector3(transform.position.x, 1, transform.position.z);
+        transform.position = new Vector3(transform.position.x, transform.localScale.y , transform.position.z);
     }
 
     void OnTriggerEnter(Collider other) {
@@ -232,7 +285,6 @@ public class simpleMovement : MonoBehaviour {
             // You are attacked. Extract the damage from the enemy skill
             //Totalmente provisional, podemos hacer un append de las propias stats en el collider dede el script de skill.
             GameObject enemy = other.gameObject;
-
             //Get the enemy skill script.
             Skill enemySkill = enemy.GetComponent<Skill>();
             // Get the damage from the enemy skill.
@@ -257,7 +309,6 @@ public class simpleMovement : MonoBehaviour {
         //Set the player is quiet.
         isMoving = false;
         //Set the player is quiet.
-
         //Change the tag of the player to dead.
         gameObject.tag = "Player";
         // Change the Layer of the player to dead.
