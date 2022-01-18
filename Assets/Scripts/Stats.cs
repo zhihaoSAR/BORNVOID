@@ -23,11 +23,16 @@ public class Stats : MonoBehaviour {
 
 
     
+    //Dash Time es el maximo tiempo que puede estar en el dash, left Time es el tiempo que queda en el dash.
     public float dashTime;
+    public float dashLeftTime;
+    //Dash Cooldown es el tiempo, timer la variable que mantiene el track del tiempo hasta la carga
+    public float dashCooldown;
     public float dashTimer;
     //Only public for test.
     public bool inDash;
-
+    //Dash Speed Multiplier es el multiplicador de velocidad del dash
+    public float dashSpeedMultiplier;
 
 
     // Start is called before the first frame update
@@ -37,16 +42,17 @@ public class Stats : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+        stamine = (dashCooldown - dashTimer) / dashCooldown;
     }
 
     public void getDamage(float damage) {
         //Takes in damage and subtracts it from health, if health is less than 0, set health to 0
-        health -= damage;
-        if (health < 0) {
-            health = 0;
+        if (!inDash) {
+            health -= damage;
+            if (health < 0) {
+                health = 0;
+            }
         }
     }
 

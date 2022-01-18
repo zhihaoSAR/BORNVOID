@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Skeleton_normal : MonoBehaviour, Enemy
+public class Skeleton_normal : Enemy
 {
     [SerializeField]
     protected Status status;
@@ -19,9 +19,10 @@ public class Skeleton_normal : MonoBehaviour, Enemy
 
     [SerializeField]
     protected AudioSource running_sound;
-
+    [SerializeField]
+    protected BasicAttack basicAttack;
     //habilidades
-    protected Skill basicAttack;
+
 
     protected enum State { IDLE, DAMAGED, DEAD, CHASE, ATTACK, VOID, SKILL };
     protected State actState;
@@ -37,7 +38,9 @@ public class Skeleton_normal : MonoBehaviour, Enemy
 
     protected bool invincible = false;
 
-    public Status Status { get {
+    protected Action deadCallback = null;
+
+    public override Status Status { get {
             return status;
         }
         set {
@@ -45,12 +48,12 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         }
     }
 
-    public void dead()
+    public override void dead()
     {
         nextState = State.DEAD;
     }
 
-    public void getHit(float damage)
+    public override void getHit(float damage)
     {
         if(damage == 0)
         {
@@ -74,7 +77,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         
     }
 
-    public void pause()
+    public override void pause()
     {
         Debug.Log("No effect");
     }
@@ -86,7 +89,6 @@ public class Skeleton_normal : MonoBehaviour, Enemy
         actState = State.IDLE;
         desactiveInvincible();
         agent = GetComponent<NavMeshAgent>();
-        basicAttack = GetComponent<BasicAttack>();
         anim_attack = Animator.StringToHash("attack");
         anim_damaged = Animator.StringToHash("damaged");
         anim_dead = Animator.StringToHash("dead");
@@ -151,7 +153,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
             {
                 if (coroutineFinished)
                 {
-                    Vector3 move = UnityEngine.Random.insideUnitSphere * 10;
+                    Vector3 move = UnityEngine.Random.insideUnitSphere * 6;
                     move.y = 0;
                     agent.SetDestination(move + transform.position);
                     anim.SetBool(anim_run, true);
@@ -210,6 +212,7 @@ public class Skeleton_normal : MonoBehaviour, Enemy
             else
             {
                 gameObject.SetActive(false);
+                deadCallback();
             }
         }
     }
@@ -345,5 +348,10 @@ public class Skeleton_normal : MonoBehaviour, Enemy
                 getHit(skill.Damage);
             }
         }
+    }
+
+    public override void setDeadCallback(Action callback)
+    {
+        deadCallback = callback;
     }
 }
