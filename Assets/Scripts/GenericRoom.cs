@@ -16,7 +16,10 @@ public class GenericRoom : RoomManager
     int enemyNum;
     [SerializeField]
     bool firstRoom = false;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     [SerializeField]
     GameObject exitWall, enterWall;
 
@@ -59,6 +62,11 @@ public class GenericRoom : RoomManager
             playerEnter();
         }
 
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
     }
 
     IEnumerator Spawn()

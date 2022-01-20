@@ -12,7 +12,7 @@ public class simpleMovement : MonoBehaviour {
     //Geting a CharacterController component.
     [SerializeField] CharacterController controller;
     //Empty GameObject to use to check the values of the raycast.
-    [SerializeField] GameObject raycastChecker;
+    //[SerializeField] GameObject raycastChecker;
     //Getting the animator component.
     [SerializeField] Animator animator;
     //Getting the speed of the player from the editor.

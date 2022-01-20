@@ -18,12 +18,21 @@ public class Skeleton_normal : Enemy
     protected float atkDist = 2.5f;
 
     [SerializeField]
+<<<<<<< Updated upstream
+=======
+    protected GameObject drop;
+
+    [SerializeField]
+>>>>>>> Stashed changes
     protected AudioSource running_sound;
     [SerializeField]
     protected BasicAttack basicAttack;
     //habilidades
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
     protected enum State { IDLE, DAMAGED, DEAD, CHASE, ATTACK, VOID, SKILL };
     protected State actState;
     protected State nextState;
@@ -211,6 +220,11 @@ public class Skeleton_normal : Enemy
             }
             else
             {
+                //Spawn a drop with 90% chance
+                if (UnityEngine.Random.Range(0, 10) <= 10 && drop != null) {
+                    Instantiate(drop, transform.position, Quaternion.identity);
+                    //GameObject dropR = Instantiate(rsc, transform.position, Quaternion.identity);
+                }
                 gameObject.SetActive(false);
                 deadCallback();
             }

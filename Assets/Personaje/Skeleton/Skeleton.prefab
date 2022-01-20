@@ -116,6 +116,10 @@ MonoBehaviour:
   anim: {fileID: 1049020179898957476}
   searcher: {fileID: 1154201420}
   atkDist: 2
+<<<<<<< Updated upstream
+=======
+  drop: {fileID: 0}
+>>>>>>> Stashed changes
   running_sound: {fileID: 8077402958604298930}
   basicAttack: {fileID: 6585180031017120922}
 --- !u!195 &1870423285
@@ -557,9 +561,9 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 25b53b48196f18e4a9d3a610f3ba04c2, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
---- !u!4 &1049020179905843466 stripped
+--- !u!4 &1049020179905843554 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 400078, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
+  m_CorrespondingSourceObject: {fileID: 400038, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
   m_PrefabInstance: {fileID: 1049020179906235332}
   m_PrefabAsset: {fileID: 0}
 --- !u!95 &1049020179898957476 stripped
@@ -567,9 +571,9 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 9500000, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
   m_PrefabInstance: {fileID: 1049020179906235332}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1049020179905843554 stripped
+--- !u!4 &1049020179905843466 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 400038, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
+  m_CorrespondingSourceObject: {fileID: 400078, guid: 5a35c5f0a89b9654d897ccd7c8f81bd0, type: 3}
   m_PrefabInstance: {fileID: 1049020179906235332}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8210570876911087253
