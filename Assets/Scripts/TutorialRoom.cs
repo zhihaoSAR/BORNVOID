@@ -19,22 +19,14 @@ public class TutorialRoom : GenericRoom
         panel.SetActive(true);
         finalizar.activar(textArea, closePanel);
     }
-<<<<<<< Updated upstream
-    public override void playerEnter()
-    {
-=======
     public override void playerEnter() {
->>>>>>> Stashed changes
         StartCoroutine(startTutorial());
     }
     void closePanel()
     {
         panel.SetActive(false);
     }
-<<<<<<< Updated upstream
-=======
     
->>>>>>> Stashed changes
     IEnumerator startTutorial()
     {
         tutorial.activar(textArea, finishRead);

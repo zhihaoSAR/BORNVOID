@@ -18,21 +18,13 @@ public class Skeleton_normal : Enemy
     protected float atkDist = 2.5f;
 
     [SerializeField]
-<<<<<<< Updated upstream
-=======
     protected GameObject drop;
 
     [SerializeField]
->>>>>>> Stashed changes
     protected AudioSource running_sound;
     [SerializeField]
     protected BasicAttack basicAttack;
     //habilidades
-<<<<<<< Updated upstream
-
-
-=======
->>>>>>> Stashed changes
     protected enum State { IDLE, DAMAGED, DEAD, CHASE, ATTACK, VOID, SKILL };
     protected State actState;
     protected State nextState;

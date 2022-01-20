@@ -257,13 +257,10 @@ PrefabInstance:
       propertyPath: InitialModule.startRotationY.minMaxState
       value: 3
       objectReference: {fileID: 0}
-<<<<<<< Updated upstream
-=======
     - target: {fileID: 114000010586641710, guid: 3fb31ce22fa348f49a27f87a5b0adcbe, type: 3}
       propertyPath: speed
       value: 0
       objectReference: {fileID: 0}
->>>>>>> Stashed changes
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3fb31ce22fa348f49a27f87a5b0adcbe, type: 3}
 --- !u!4 &637373172370578722 stripped
