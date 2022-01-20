@@ -116,10 +116,7 @@ MonoBehaviour:
   anim: {fileID: 1049020179898957476}
   searcher: {fileID: 1154201420}
   atkDist: 2
-<<<<<<< Updated upstream
-=======
   drop: {fileID: 0}
->>>>>>> Stashed changes
   running_sound: {fileID: 8077402958604298930}
   basicAttack: {fileID: 6585180031017120922}
 --- !u!195 &1870423285

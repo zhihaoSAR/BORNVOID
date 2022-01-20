@@ -58,6 +58,8 @@ public class GenericRoom : RoomManager
             playerEnter();
         }
 
+
+
     }
 
     IEnumerator Spawn()
